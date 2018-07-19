@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# fdroid-dl
+fdroid-dl.json
+metadata/
+repo/
+.cache/
