@@ -1,3 +1,6 @@
 sphinx
 sphinxcontrib-napoleon
 sphinx_rtd_theme
+requests-futures
+PyYAML
+click

@@ -30,6 +30,10 @@ fdroid-dl is available via pip, simply run ```pip install fdroid-dl``` and you c
 # CHANGELOG
 - WIP: Documentation added
 - WIP: Test added
+  - requests-mock ?
+
+## Ideas
+- requests-cache ?
 
 # Development
 ## Requirements
