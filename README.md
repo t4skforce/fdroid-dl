@@ -7,6 +7,9 @@ The idea is to have an no internet local copy of one or more repositories, witho
 # Installation
 fdroid-dl is available via pip, simply run ```pip install fdroid-dl``` and you can use ```fdroid-dl``` on your command line.
 
+# Documentation
+Can be found at [fdroid-dl.readthedocs.io](https://fdroid-dl.readthedocs.io/en/latest/)
+
 # Command Line Options
 
 # Configuration File
