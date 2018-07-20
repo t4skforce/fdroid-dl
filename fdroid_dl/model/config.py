@@ -166,7 +166,7 @@ class Config(collections.MutableMapping):
 
         Returns
         -------
-        Index
+        fdroid_dl.model.Index
             index found for given key
 
         Raises
@@ -197,8 +197,8 @@ class Config(collections.MutableMapping):
 
         Returns
         -------
-        .model.Index
-            index found for given key
+        fdroid_dl.model.Index
+            index found for given url
 
         """
         repo = self.repo(url)

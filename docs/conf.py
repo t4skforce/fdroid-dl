@@ -14,8 +14,8 @@
 #
 import sys
 import os
-import fdroid_dl
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import fdroid_dl
 
 # -- Project information -----------------------------------------------------
 
@@ -48,6 +48,8 @@ extensions = [
     'sphinxcontrib.napoleon',
     'sphinx.ext.intersphinx',
 ]
+
+intersphinx_mapping = {'python': ('https://docs.python.org/3.4', None)}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
