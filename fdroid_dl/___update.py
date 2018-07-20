@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 '''
     def repo(self):
         with Downloader(threads=self.config.threads) as d:

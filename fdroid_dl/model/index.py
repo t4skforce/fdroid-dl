@@ -3,12 +3,10 @@
 
 import collections
 import os
-import os.path
 import re
 import json
 import xml.etree.ElementTree as ET
 from time import mktime, strptime
-import datetime
 import logging
 from urllib.parse import urljoin
 from ..json import GenericJSONEncoder
