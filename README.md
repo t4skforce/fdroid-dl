@@ -11,7 +11,7 @@ fdroid-dl is available via pip, simply run ```pip install fdroid-dl``` and you c
 
 # Configuration File
 
-# ToDo
+# TODO
 - [x] Create backend to crawl existing repos
 - [x] Fetch info directly index.jar and index-v1.jar
 - [x] Compatibility with old and new repo styles
@@ -26,6 +26,10 @@ fdroid-dl is available via pip, simply run ```pip install fdroid-dl``` and you c
 - [ ] CI builds for pip package
 - [ ] Documentation ;-)
 - [ ] Writing tests [pytest](https://docs.pytest.org/en/latest/)
+
+# CHANGELOG
+- WIP: Documentation added
+- WIP: Test added
 
 # Development
 ## Requirements

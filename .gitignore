@@ -108,3 +108,5 @@ fdroid-dl.json
 metadata/
 repo/
 .cache/
+logs/
+junit.xml

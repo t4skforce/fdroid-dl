@@ -4,15 +4,16 @@ import os.path
 import warnings
 import sys
 import setuptools
+import fdroid_dl
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="fdroid-dl",
-    version="0.0.1",
-    author="t4skforce",
-    author_email="7422037+t4skforce@users.noreply.github.com",
+    name=fdroid_dl.name,
+    version=fdroid_dl.version,
+    author=fdroid_dl.author,
+    author_email=fdroid_dl.author_mail,
     description="fdroid-dl is a f-droid (offline) mirror generation and update utility",
     long_description=long_description,
     long_description_content_type="text/markdown",
