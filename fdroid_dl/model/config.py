@@ -37,7 +37,7 @@ class Config(collections.MutableMapping):
     }
 
     def __init__(self, filename='fdroid-dl.json', repo_dir='./repo',
-                 metadata_dir='./metadata', cache_dir='.cache'):
+                 metadata_dir='./metadata', cache_dir='.cache', apk_versions=1):
         """
         Parameters
         ----------
@@ -51,6 +51,8 @@ class Config(collections.MutableMapping):
         cache_dir : str
             directory to store extracted and parsed index.json files from
             f-droid repo
+        apk_versions: int
+            how many versions of apk files should be downloaded
         """
         self.__filename = filename
         self.__repo = repo_dir
@@ -59,6 +61,7 @@ class Config(collections.MutableMapping):
         self.__store = {}
         self.__indices = {}
         self.__metadata = None
+        self.__apk_versions = apk_versions
         self.__init_defaults()
         self.__prepare_fs()
 
@@ -83,8 +86,16 @@ class Config(collections.MutableMapping):
         return str(self.__store)
 
     @property
+    def metadata(self):
+        return self.__metadata
+
+    @property
     def size(self):
         return len(self.__store.keys())
+
+    @property
+    def apk_versions(self):
+        return int(self.__apk_versions)
 
     def __init_defaults(self):
         self.__store = copy.deepcopy(Config.DEFAULTS)
@@ -124,7 +135,6 @@ class Config(collections.MutableMapping):
                     LOGGER.exception("Fatal error reading %s", config_file)
 
     def save(self):
-        print("save")
         with NamedTemporaryFile(mode='w') as tmp:
             json.dump(self.__store, tmp, sort_keys=True,
                       indent=4, cls=GenericJSONEncoder)

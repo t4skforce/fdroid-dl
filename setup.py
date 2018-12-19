@@ -11,14 +11,14 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name=fdroid_dl.name,
-    version=fdroid_dl.version,
+    version=fdroid_dl.__version__,
     author=fdroid_dl.author,
     author_email=fdroid_dl.author_mail,
     description="fdroid-dl is a f-droid (offline) mirror generation and update utility",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/t4skforce/fdroid-dl",
-    entry_points={'console_scripts': ['fdroid-dl=fdroid_dl:cli']},
+    entry_points={'console_scripts': ['fdroid-dl=fdroid_dl.__main__:main']},
     packages=setuptools.find_packages(),
     install_requires=[
         'requests-futures>=0.9.7',

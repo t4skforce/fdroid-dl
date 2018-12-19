@@ -20,10 +20,11 @@ class Selector:
         for repo in self.__metaRepos():
             self.applySessionSettings(repo, session)
             for selector in repo.apps:
-                for appid in repo.index.findAppIds(selector):
-                    if not yielded in yielded or dupes:
-                        yielded.add(appid)
-                        yield (repo,appid)
+                if not repo.index is None:
+                    for appid in repo.index.findAppIds(selector):
+                        if not yielded in yielded or dupes:
+                            yielded.add(appid)
+                            yield (repo,appid)
 
     def applySessionSettings(self, repo, session):
         ''' apply security settings for basic auth and ssl verification '''
