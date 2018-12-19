@@ -39,7 +39,7 @@ class ApkUpdate(Selector):
             # sort newest first
             packages = sorted(downloads[appid], key=lambda e:e.get('versionCode',0), reverse=True)
             for idx,pkg in enumerate(packages):
-                if idx >= self.__config.versions: break # only download number of confgured files
+                if idx >= self.__config.apk_versions: break # only download number of confgured files
                 url = pkg.get('apkName')
                 filename = os.path.basename(str(urlparse(url).path))
                 filepath = os.path.join(self.__config.repo_dir,filename)

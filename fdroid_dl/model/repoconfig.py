@@ -37,7 +37,11 @@ class RepoConfig(collections.MutableMapping):
 
     @property
     def index(self):
-        return self.__config.index(self.url)
+        try:
+            return self.__config.index(self.url)
+        except KeyError as e:
+            logger.error(str(e))
+        return None
 
     @property
     def auth(self):
@@ -98,11 +102,6 @@ class RepoConfig(collections.MutableMapping):
     def default_locale(self):
         if 'default_locale' in self.__store: return str(self.__store['default_locale'])
         return self.__config.default_locale
-
-    @property
-    def versions(self):
-        if 'versions' in self.__store: return int(self.__store['versions'])
-        return int(self.__config.versions)
 
     @property
     def apps(self):

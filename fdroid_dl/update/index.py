@@ -33,15 +33,26 @@ class IndexUpdate:
     def download(self,new_index,old_index,timeout=60):
         if new_index is None: raise AttributeError('new_index missing %s'%repos)
         if old_index is None: raise AttributeError('old_index missing %s'%repos)
-        new_futures = self.__future(repos=new_index,timeout=timeout,http_method=FuturesSessionFlex.get,background_callback=FuturesSessionFlex.extract_jar, stream=True)
-        old_futures = self.__future(repos=old_index,timeout=timeout,http_method=FuturesSessionFlex.get,background_callback=FuturesSessionFlex.extract_jar,attr='url_index', stream=True)
+        new_futures = self.__future(
+                            repos=new_index,
+                            timeout=timeout,
+                            http_method=FuturesSessionFlex.get,
+                            hooks={ 'response': [ FuturesSessionFlex.extract_jar ] },
+                            stream=True)
+        old_futures = self.__future(
+                            repos=old_index,
+                            timeout=timeout,
+                            http_method=FuturesSessionFlex.get,
+                            hooks={'response': [ FuturesSessionFlex.extract_jar ]},
+                            attr='url_index',
+                            stream=True)
         self.__download_response(new_futures)
         self.__download_response(old_futures)
 
-    def __future(self, repos=None, attr='url_index_v1', http_method=FuturesSessionFlex.head, background_callback=None, timeout=60,**kwargs):
+    def __future(self, repos=None, attr='url_index_v1', http_method=FuturesSessionFlex.head, hooks=None, timeout=60,**kwargs):
         if repos is None: raise AttributeError('repos missing %s'%repos)
-        if background_callback is None:
-            background_callback=FuturesSessionFlex.add_hash
+        if hooks is None:
+            hooks={'response': [ FuturesSessionFlex.add_hash ]}
         futures=[]
         with FuturesSessionFlex(max_workers=self.max_workers) as session:
             for repo in repos:
@@ -50,7 +61,7 @@ class IndexUpdate:
                     ts.auth=repo.auth
                     ts.verify=repo.verify
                     session.map(getattr(repo,attr),ts)
-                request = http_method(session,getattr(repo,attr), background_callback=background_callback, timeout=timeout, **kwargs)
+                request = http_method(session,getattr(repo,attr), hooks=hooks, timeout=timeout, **kwargs)
                 request.repo=repo # pass repo ref to future processing
                 futures.append(request)
         return futures

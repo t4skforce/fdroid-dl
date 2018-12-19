@@ -55,27 +55,29 @@ class FuturesSessionFlex(FuturesSession):
         return '%s %s' % (f, FuturesSessionFlex.SUFFIXES[i])
 
     @staticmethod
-    def add_size(session, response):
+    def add_size(response, *args, **kwargs):
         if 'Content-Length' in response.headers:
             response.size=int(response.headers.get('Content-Length',0))
         else:
             logger.warn("Content-Length Header not provided by %s"%response.url)
             response.size=len(response.content)
         response.h_size=FuturesSessionFlex.h_size(response.size)
+        return response
 
     @staticmethod
-    def add_hash(session, response):
+    def add_hash(response, *args, **kwargs):
         response.hash=None
         if response.ok:
             ts = str(time.time())
             cv = response.headers.get('Last-Modified',ts)+response.headers.get('ETag',ts)
             response.hash=hashlib.sha1(str(cv).encode('UTF-8')).hexdigest()
+        return response
 
     @staticmethod
-    def extract_jar(session, response):
+    def extract_jar(response, *args, **kwargs):
         if response.ok:
             start = time.time()
-            FuturesSessionFlex.add_size(session, response)
+            response = FuturesSessionFlex.add_size(response, *args, **kwargs)
             response.index=NamedTemporaryFile()
             with NamedTemporaryFile() as f:
                 for chunk in response.iter_content(chunk_size=FuturesSessionFlex.BLOCKSIZE):
@@ -90,6 +92,7 @@ class FuturesSessionFlex(FuturesSession):
             logging.debug("%s - %s - (%s)"%(response.index.name,response.url,FuturesSessionFlex.h_size(os.stat(response.index.name).st_size)))
             elapsed = time.time() - start
             response.elapsed+=timedelta(seconds=elapsed)
+        return response
 
     def __lookup_fs_session(self,url):
         # fast direct matches
@@ -108,6 +111,8 @@ class FuturesSessionFlex(FuturesSession):
         return super(FuturesSessionFlex, self).request(*args, **kwargs)
 
     def close(self):
-        for key, session in self.__sessions.items():
-            session.close()
-        self.__default_sessions.close()
+        try:
+            for key, session in self.__sessions.items():
+                session.close()
+        except Exception as e:
+            logging.exception("Error closing sessions")
