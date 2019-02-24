@@ -80,7 +80,7 @@ class Index(collections.MutableMapping):
                 retVal.add(app['packageName'])
         else:
             for app in self.__store['apps']:
-                if app.get('packageName') == key:
+                if app['packageName'] == key:
                     retVal.add(app['packageName'])
         return list(retVal)
 
