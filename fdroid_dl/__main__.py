@@ -36,8 +36,8 @@ def main(ctx, debug, config, repo, metadata, cache):
         logger.setLevel(logging.DEBUG)
     logger.info('Debug mode is %s' % ('on' if debug else 'off'))
     if ctx.invoked_subcommand is None:
-        with click.Context(cli) as ctx:
-            click.echo(cli.get_help(ctx))
+        with click.Context(main) as ctx:
+            click.echo(main.get_help(ctx))
 
 
 @main.group(name='update', invoke_without_command=True, short_help='starts updating process')
