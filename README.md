@@ -1,6 +1,7 @@
 # fdroid-dl
 
 [![Documentation Status](https://readthedocs.org/projects/fdroid-dl/badge/?version=latest)](https://fdroid-dl.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://api.travis-ci.org/t4skforce/fdroid-dl.svg)](https://travis-ci.org/t4skforce/fdroid-dl)
 
 
 Is a python based f-droid mirror generation and update utility. Point at one or more existing f-droid repositories and the utility will download the metadata (pictures, descriptions,..) for you and place it in your local system. Simply run ```fdroid-dl && fdroid update``` and you are set.
