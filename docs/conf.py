@@ -22,12 +22,12 @@ import fdroid_dl
 
 # -- Project information -----------------------------------------------------
 
-project = fdroid_dl.name
+project = 'fdroid-dl'
 copyright = '{}, t4skforce'.format(now.year)
-author = fdroid_dl.author
+author = 't4skforce'
 
 # The short X.Y version
-version = fdroid_dl.version
+version = fdroid_dl.__version__
 # The full version, including alpha/beta/rc tags
 release = version
 
