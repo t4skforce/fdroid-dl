@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
-import os
 import warnings
 import sys
 import setuptools
 
-SCRIPT_ROOT=os.path.dirname(os.path.abspath(__file__))
-with open(os.path.join(SCRIPT_ROOT,"README.md"), "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(

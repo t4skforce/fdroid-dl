@@ -121,6 +121,9 @@ class Config(MutableMapping):
         if file is None:
             file = self.__filename
         if not hasattr(file, 'read'):
+            if not os.path.exists(file):
+                with open(file, 'w') as fl:
+                    fl.write('{}')
             file = open(file, 'r')
 
         if os.path.isfile(self.__filename):
