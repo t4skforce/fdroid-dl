@@ -1,5 +1,5 @@
 name = 'fdroid-dl'
-version = '0.0.2'
+version = '0.0.3'
 author = 't4skforce'
 author_mail = '7422037+t4skforce@users.noreply.github.com'
 __version__ = version
