@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
-import os.path
+import os
 import warnings
 import sys
 import setuptools
-import fdroid_dl
 
-with open("README.md", "r") as fh:
+SCRIPT_ROOT=os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(SCRIPT_ROOT,"README.md"), "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name=fdroid_dl.NAME,
-    version=fdroid_dl.__version__,
-    author=fdroid_dl.AUTHOR,
-    author_email=fdroid_dl.AUTHOR_MAIL,
+    name="fdroid-dl",
+    version="0.0.4",
+    author="t4skforce",
+    author_email="7422037+t4skforce@users.noreply.github.com",
     description="fdroid-dl is a f-droid (offline) mirror generation and update utility",
     long_description=long_description,
     long_description_content_type="text/markdown",
