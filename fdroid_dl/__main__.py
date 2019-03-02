@@ -1,14 +1,14 @@
 """main entrypoint into fdroid-dl."""
 
 import logging
+import click
 from .model import Config
 from .update import Update
-import click
-from . import name
+from . import NAME
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(name)
+LOGGER = logging.getLogger(NAME)
 
 @click.group(invoke_without_command=True)
 @click.option('-d', '--debug', is_flag=True, default=False, help='enable debug level logging')
@@ -33,11 +33,11 @@ def main(ctx, debug, config, repo, metadata, cache):
     ctx.obj['metadata'] = metadata
     ctx.obj['cache_dir'] = cache
     if debug:
-        logger.setLevel(logging.DEBUG)
-    logger.info('Debug mode is %s' % ('on' if debug else 'off'))
+        LOGGER.setLevel(logging.DEBUG)
+    LOGGER.info('Debug mode is %s', ('on' if debug else 'off'))
     if ctx.invoked_subcommand is None:
-        with click.Context(main) as ctx:
-            click.echo(main.get_help(ctx))
+        with click.Context(main) as cctx:
+            click.echo(main.get_help(cctx))
 
 
 @main.group(name='update', invoke_without_command=True, short_help='starts updating process')
@@ -52,13 +52,18 @@ def main(ctx, debug, config, repo, metadata, cache):
 @click.option('--download-timeout', default=60, type=int, show_default=True, help='maximum time in seconds file download is allowed to take')
 @click.pass_context
 def update(ctx, index, metadata, apk, apk_versions, src, threads, head_timeout, index_timeout, download_timeout):
-    if apk_versions <= 0: apk_versions=1
-    with Config(ctx.obj['config'], cache_dir=ctx.obj['cache_dir'],apk_versions=apk_versions) as cfg:
-        u = Update(cfg, max_workers=threads, head_timeout=head_timeout, index_timeout=index_timeout, download_timeout=download_timeout)
-        if index:       u.index()
-        if metadata:    u.metadata()
-        if apk:         u.apk()
-        if src:         u.src()
+    if apk_versions <= 0:
+        apk_versions = 1
+    with Config(ctx.obj['config'], cache_dir=ctx.obj['cache_dir'], apk_versions=apk_versions) as cfg:
+        update = Update(cfg, max_workers=threads, head_timeout=head_timeout, index_timeout=index_timeout, download_timeout=download_timeout)
+        if index:
+            update.index()
+        if metadata:
+            update.metadata()
+        if apk:
+            update.apk()
+        if src:
+            update.src()
 
 if __name__ == '__main__':
     main()

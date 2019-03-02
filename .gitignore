@@ -110,3 +110,5 @@ repo/
 .cache/
 logs/
 junit.xml
+docs/_static/*
+!docs/_static/empty.txt

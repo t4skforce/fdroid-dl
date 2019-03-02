@@ -15,12 +15,15 @@
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import datetime
+now = datetime.datetime.now()
 import fdroid_dl
+
 
 # -- Project information -----------------------------------------------------
 
 project = fdroid_dl.name
-copyright = '2018, t4skforce'
+copyright = '{}, t4skforce'.format(now.year)
 author = fdroid_dl.author
 
 # The short X.Y version

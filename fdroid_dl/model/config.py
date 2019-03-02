@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import collections
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
 import copy
 import json
 import os
@@ -16,9 +19,7 @@ from ..json import GenericJSONEncoder
 
 
 LOGGER = logging.getLogger('model.Config')
-
-
-class Config(collections.MutableMapping):
+class Config(MutableMapping):
     """
     Main Class responsible for handling the f-droid.json config file.
 
@@ -105,9 +106,12 @@ class Config(collections.MutableMapping):
         self.__metadata = Metadata(self, Config.DEFAULTS.get('metadata', {}))
 
     def __prepare_fs(self):
-        os.makedirs(self.__repo, exist_ok=True)
-        os.makedirs(self.__metadata_dir, exist_ok=True)
-        os.makedirs(self.__cache_dir, exist_ok=True)
+        if not os.path.exists(self.__repo):
+            os.makedirs(self.__repo)
+        if not os.path.exists(self.__metadata_dir):
+            os.makedirs(self.__metadata_dir)
+        if not os.path.exists(self.__cache_dir):
+            os.makedirs(self.__cache_dir)
 
     def load(self, file=None):
         """
@@ -156,7 +160,7 @@ class Config(collections.MutableMapping):
             if repo.url in self.__indices:
                 yield self.__indices[repo.url]
             elif os.path.exists(repo.filename):
-                with Index.fromJSON(repo.filename, key=repo.url) as idx:
+                with Index.from_json(repo.filename, key=repo.url) as idx:
                     self.__indices[repo.url] = idx
                     yield idx
 
@@ -215,7 +219,7 @@ class Config(collections.MutableMapping):
         if repo.url in self.__indices:
             return self.__indices[repo.url]
         if os.path.exists(repo.filename):
-            with Index.fromJSON(repo.filename, key=repo.url) as idx:
+            with Index.from_json(repo.filename, key=repo.url) as idx:
                 self.__indices[repo.url] = idx
             return self.__indices[repo.url]
         raise KeyError(

@@ -2,23 +2,29 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import collections
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
 import copy
 import json
 from ..json import GenericJSONEncoder
 
 
-logger = logging.getLogger('model.AppMetadata')
-class AppMetadata(collections.MutableMapping):
-    def __init__(self, appid, cfg={}, json={}, default_locale='en-US'):
-        if appid is None: raise KeyError("no appid defined")
+LOGGER = logging.getLogger('model.AppMetadata')
+class AppMetadata(MutableMapping):
+    def __init__(self, appid, cfg=dict(), json=dict(), default_locale='en-US'):
+        if appid is None:
+            raise KeyError("no appid defined")
         self.__id = appid
         self.__cfg = cfg
-        if not json is None: self.__store = self.__merge(copy.deepcopy(cfg),copy.deepcopy(json))
-        else: self.__store = copy.deepcopy(cfg)
+        if not json is None:
+            self.__store = self.__merge(copy.deepcopy(cfg), copy.deepcopy(json))
+        else:
+            self.__store = copy.deepcopy(cfg)
         self.__default_locale = default_locale
 
-    def __merge(self,source,destination):
+    def __merge(self, source, destination):
         for key, value in source.items():
             if isinstance(value, dict):
                 node = destination.setdefault(key, {})
@@ -27,6 +33,7 @@ class AppMetadata(collections.MutableMapping):
                 destination[key] = value
         return destination
 
+    # pylint: disable=C0103
     @property
     def id(self):
         return str(self.__id)
@@ -35,59 +42,59 @@ class AppMetadata(collections.MutableMapping):
     def appid(self):
         return str(self.__id)
 
-    def merge(self,appmetadata):
+    def merge(self, appmetadata):
         ''' used for adding addition data from e.g. index '''
-        if not isinstance(appmetadata,AppMetadata) and not isinstance(appmetadata,dict):
+        if not isinstance(appmetadata, AppMetadata) and not isinstance(appmetadata, dict):
             raise NotImplementedError("I can only merge two instances of AppMetadata at the moment")
-        self.__store = self.__merge(self.__store,copy.deepcopy(appmetadata))
+        self.__store = self.__merge(self.__store, copy.deepcopy(appmetadata))
         return self
 
-    def update(self,appmetadata):
+    def update(self, appmetadata):
         ''' apply manual changes and save tose in config '''
-        if not isinstance(appmetadata,AppMetadata) and not isinstance(appmetadata,dict):
+        if not isinstance(appmetadata, AppMetadata) and not isinstance(appmetadata, dict):
             raise NotImplementedError("I can only merge two instances of AppMetadata at the moment")
-        self.__store = self.__merge(copy.deepcopy(appmetadata),self.__store)
-        self.__cfg = self.__merge(copy.deepcopy(appmetadata),self.__cfg)
+        self.__store = self.__merge(copy.deepcopy(appmetadata), self.__store)
+        self.__cfg = self.__merge(copy.deepcopy(appmetadata), self.__cfg)
         return self
 
-    def localized(self,locale=None):
-        return self.__store.get('localized',{}).get(locale,{})
+    def localized(self, locale=None):
+        return self.__store.get('localized', {}).get(locale, {})
 
-    def full_description(self,locale=None):
-        return self.localized(locale).get('description',None)
+    def full_description(self, locale=None):
+        return self.localized(locale).get('description', None)
 
-    def short_description(self,locale=None):
-        return self.localized(locale).get('summary',None)
+    def short_description(self, locale=None):
+        return self.localized(locale).get('summary', None)
 
-    def title(self,locale=None):
-        return self.localized(locale).get('name',None)
+    def title(self, locale=None):
+        return self.localized(locale).get('name', None)
 
-    def featureGraphic(self,locale=None):
-        return self.localized(locale).get('featureGraphic',None)
+    def feature_graphic(self, locale=None):
+        return self.localized(locale).get('featureGraphic', None)
 
-    def icon(self,locale=None):
-        return self.localized(locale).get('icon',None)
+    def icon(self, locale=None):
+        return self.localized(locale).get('icon', None)
 
-    def promoGraphic(self,locale=None):
-        return self.localized(locale).get('promoGraphic',None)
+    def promo_graphic(self, locale=None):
+        return self.localized(locale).get('promoGraphic', None)
 
-    def tvBanner(self,locale=None):
-        return self.localized(locale).get('tvBanner',None)
+    def tv_banner(self, locale=None):
+        return self.localized(locale).get('tvBanner', None)
 
-    def phoneScreenshots(self,locale=None):
-        return self.localized(locale).get('phoneScreenshots',[])
+    def phone_screenshots(self, locale=None):
+        return self.localized(locale).get('phoneScreenshots', [])
 
-    def sevenInchScreenshots(self,locale=None):
-        return self.localized(locale).get('sevenInchScreenshots',[])
+    def seven_inch_screenshots(self, locale=None):
+        return self.localized(locale).get('sevenInchScreenshots', [])
 
-    def tenInchScreenshots(self,locale=None):
-        return self.localized(locale).get('tenInchScreenshots',[])
+    def ten_inch_screenshots(self, locale=None):
+        return self.localized(locale).get('tenInchScreenshots', [])
 
-    def tvScreenshots(self,locale=None):
-        return self.localized(locale).get('tvScreenshots',[])
+    def tv_screenshots(self, locale=None):
+        return self.localized(locale).get('tvScreenshots', [])
 
-    def wearScreenshots(self,locale=None):
-        return self.localized(locale).get('wearScreenshots',[])
+    def wear_screenshots(self, locale=None):
+        return self.localized(locale).get('wearScreenshots', [])
 
     @property
     def locales(self):
@@ -118,7 +125,8 @@ class AppMetadata(collections.MutableMapping):
         self.__cfg[key] = value
         self.__store[key] = value
     def __delitem__(self, key):
-        if key in self.__cfg: del self.__cfg[key]
+        if key in self.__cfg:
+            del self.__cfg[key]
         del self.__store[key]
     def __iter__(self):
         return iter(self.__store)

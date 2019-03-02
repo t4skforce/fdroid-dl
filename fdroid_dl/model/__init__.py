@@ -7,4 +7,4 @@ from .appmetadata import AppMetadata
 from .metadata import Metadata
 from .index import Index
 
-__all__ = ['Config','RepoConfig','AppMetadata','Metadata','Index']
+__all__ = ['Config', 'RepoConfig', 'AppMetadata', 'Metadata', 'Index']

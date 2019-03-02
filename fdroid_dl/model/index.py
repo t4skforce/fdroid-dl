@@ -1,28 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import collections
-import os
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
 import re
 import json
 import xml.etree.ElementTree as ET
 from time import mktime, strptime
 import logging
-from urllib.parse import urljoin
-from ..json import GenericJSONEncoder
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 from tempfile import NamedTemporaryFile
 import shutil
+from ..json import GenericJSONEncoder
 
-logger = logging.getLogger('model.Index')
 
-
-class Index(collections.MutableMapping):
+LOGGER = logging.getLogger('model.Index')
+class Index(MutableMapping):
     """
     Main Class responsible for handling the f-droid's index.xml and
     index-v1.json files.
     """
 
-    def __init__(self, key=None, filename=None, format='json', default_locale='en-US', store={}):
+    def __init__(self, key=None, filename=None, format='json', default_locale='en-US', store=dict()):
         self.__key = key
         self.__filename = filename
         self.__format = format
@@ -30,7 +34,7 @@ class Index(collections.MutableMapping):
         self.__store = store
 
     @classmethod
-    def fromJSON(cls, source, **kwargs):
+    def from_json(cls, source, **kwargs):
         if not hasattr(source, "read"):
             source = open(source, "r")
         kwargs['format'] = 'json'
@@ -38,7 +42,7 @@ class Index(collections.MutableMapping):
         return cls(**kwargs).load(source)
 
     @classmethod
-    def fromXML(cls, source, **kwargs):
+    def from_xml(cls, source, **kwargs):
         if not hasattr(source, "read"):
             source = open(source, "r")
         kwargs['format'] = 'xml'
@@ -65,24 +69,24 @@ class Index(collections.MutableMapping):
     def default_locale(self):
         return str(self.__default_locale)
 
-    def findAppIds(self, key):
+    def find_appids(self, key):
         if key is None:
             raise KeyError("key must not be empty")
-        retVal = set()
+        ret_val = set()
         if key.startswith('regex:'):
-            c = re.compile(key[6:], re.I | re.S)
+            regexc = re.compile(key[6:], re.I | re.S)
             for app in self.__store['apps']:
-                m = c.match(app['packageName'])
-                if not m is None:
-                    retVal.add(app['packageName'])
+                match = regexc.match(app['packageName'])
+                if not match is None:
+                    ret_val.add(app['packageName'])
         elif key in ['*', '.*', 'all']:
             for app in self.__store['apps']:
-                retVal.add(app['packageName'])
+                ret_val.add(app['packageName'])
         else:
             for app in self.__store['apps']:
                 if app['packageName'] == key:
-                    retVal.add(app['packageName'])
-        return list(retVal)
+                    ret_val.add(app['packageName'])
+        return list(ret_val)
 
     def defaultnum(self, value):
         if value.isnumeric():
@@ -91,10 +95,10 @@ class Index(collections.MutableMapping):
 
     def custom_func(self, xpath):
         if not xpath is None:
-            p = re.compile('(.*?):(.*)$', re.I | re.S)
-            m = p.match(xpath)
-            if not m is None:
-                return (m.group(1), m.group(2))
+            regexc = re.compile(r'(.*?):(.*)$', re.I | re.S)
+            match = regexc.match(xpath)
+            if not match is None:
+                return (match.group(1), match.group(2))
             return (xpath, None)
         return (None, None)
 
@@ -104,7 +108,7 @@ class Index(collections.MutableMapping):
         try:
             return eval(method, {'mktime': mktime, 'strptime': strptime}, {'value': value})
         except:
-            logger.exception("error in eval(%s)", method)
+            LOGGER.exception("error in eval(%s)", method)
 
     def xmlattr(self, node, xml_node, key=None, xpath=None):
         if xpath is None and key is None:
@@ -120,9 +124,9 @@ class Index(collections.MutableMapping):
 
     def xmlattrval(self, xml_node, xpath):
         if not xml_node is None:
-            p = re.compile('^.*?\[@([^\]]+)\]$')
-            m = p.match(xpath)
-            if not m is None:
+            regexc = re.compile(r'^.*?\[@([^\]]+)\]$')
+            match = regexc.match(xpath)
+            if not match is None:
                 attr_name = m.group(1)
             else:
                 attr_name = xpath
@@ -164,113 +168,113 @@ class Index(collections.MutableMapping):
                     return self.defaultnum(value.strip())
 
     def xmllist(self, root, xpath):
-        retVal = []
-        p = re.compile('^.*?\[@([^\]]+)\]$')
-        m = p.match(xpath)
-        if not m is None:
-            attr_name = m.group(1)
+        ret_val = []
+        regexc = re.compile(r'^.*?\[@([^\]]+)\]$')
+        match = regexc.match(xpath)
+        if not match is None:
+            attr_name = match.group(1)
             matches = root.findall(xpath)
             if not matches is None:
                 for match in matches:
                     value = match.get(attr_name, None)
                     if not value is None:
-                        retVal.append(self.defaultnum(value.strip()))
+                        ret_val.append(self.defaultnum(value.strip()))
         else:
             matches = root.findall(xpath)
             if not matches is None:
                 for match in matches:
                     value = self.xmltextval(match)
                     if not value is None:
-                        retVal.append(value)
-        return retVal
+                        ret_val.append(value)
+        return ret_val
 
     def convert(self, root):
         self.__store = {}
         store = self.__store
         repo = root.find('repo')
         if not repo is None:
-            sr = store['repo'] = {}
-            self.xmlattr(sr, root, 'timestamp', './repo[@timestamp]')
-            self.xmlattr(sr, root, 'version', './repo[@version]')
-            self.xmlattr(sr, root, 'maxage', './repo[@maxage]')
-            self.xmlattr(sr, root, 'name', './repo[@name]')
-            self.xmlattr(sr, root, 'icon', './repo[@icon]')
-            self.xmlattr(sr, root, 'url', './repo[@address]')
-            self.xmltext(sr, root, 'description', './description')
-            sr['mirrors'] = self.xmllist(repo, './mirror')
-        rq = store['requests'] = {}
-        rq['install'] = self.xmllist(root, './install[@packageName]')
-        rq['uninstall'] = self.xmllist(root, './uninstall[@packageName]')
+            srepo = store['repo'] = {}
+            self.xmlattr(srepo, root, 'timestamp', './repo[@timestamp]')
+            self.xmlattr(srepo, root, 'version', './repo[@version]')
+            self.xmlattr(srepo, root, 'maxage', './repo[@maxage]')
+            self.xmlattr(srepo, root, 'name', './repo[@name]')
+            self.xmlattr(srepo, root, 'icon', './repo[@icon]')
+            self.xmlattr(srepo, root, 'url', './repo[@address]')
+            self.xmltext(srepo, root, 'description', './description')
+            srepo['mirrors'] = self.xmllist(repo, './mirror')
+        requ = store['requests'] = {}
+        requ['install'] = self.xmllist(root, './install[@packageName]')
+        requ['uninstall'] = self.xmllist(root, './uninstall[@packageName]')
         apps = store['apps'] = []
         pkgs = store['packages'] = {}
         applications = root.findall('application[@id]')
         for xmlapp in applications:
-            appVal = {}
-            self.xmltext(appVal, xmlapp, 'authorEmail', './email')
-            self.xmltext(appVal, xmlapp, 'authorName', './author')
-            self.xmltext(appVal, xmlapp, 'authorWebSite', './web')
-            self.xmltext(appVal, xmlapp, 'bitcoin', './bitcoin')
-            self.xmltext(appVal, xmlapp, 'donate', './donate')
-            self.xmltext(appVal, xmlapp, 'flattr', './flattr')
-            self.xmltext(appVal, xmlapp, 'liberapay', './liberapay')
-            self.xmltext(appVal, xmlapp, 'litecoin', './litecoin')
+            app_val = {}
+            self.xmltext(app_val, xmlapp, 'authorEmail', './email')
+            self.xmltext(app_val, xmlapp, 'authorName', './author')
+            self.xmltext(app_val, xmlapp, 'authorWebSite', './web')
+            self.xmltext(app_val, xmlapp, 'bitcoin', './bitcoin')
+            self.xmltext(app_val, xmlapp, 'donate', './donate')
+            self.xmltext(app_val, xmlapp, 'flattr', './flattr')
+            self.xmltext(app_val, xmlapp, 'liberapay', './liberapay')
+            self.xmltext(app_val, xmlapp, 'litecoin', './litecoin')
             cat = self.xmltextval(xmlapp, 'categories')
             if not cat is None and len(cat) > 0:
-                appVal['categories'] = cat.split(',')
+                app_val['categories'] = cat.split(',')
             afaet = self.xmltextval(xmlapp, 'antiFeatures')
             if not afaet is None and len(afaet) > 0:
-                appVal['antiFeatures'] = afaet.split(',')
-            self.xmltext(appVal, xmlapp, 'suggestedVersionName',
+                app_val['antiFeatures'] = afaet.split(',')
+            self.xmltext(app_val, xmlapp, 'suggestedVersionName',
                          './marketversion')
-            self.xmltext(appVal, xmlapp, 'suggestedVersionCode',
+            self.xmltext(app_val, xmlapp, 'suggestedVersionCode',
                          './marketvercode')
-            self.xmltext(appVal, xmlapp, 'issueTracker', './tracker')
-            self.xmltext(appVal, xmlapp, 'changelog', './changelog')
-            self.xmltext(appVal, xmlapp, 'license', './license')
-            self.xmltext(appVal, xmlapp, 'name', './name')
-            self.xmltext(appVal, xmlapp, 'sourceCode', './source')
-            self.xmltext(appVal, xmlapp, 'webSite', './web')
-            self.xmltext(appVal, xmlapp, 'added',
+            self.xmltext(app_val, xmlapp, 'issueTracker', './tracker')
+            self.xmltext(app_val, xmlapp, 'changelog', './changelog')
+            self.xmltext(app_val, xmlapp, 'license', './license')
+            self.xmltext(app_val, xmlapp, 'name', './name')
+            self.xmltext(app_val, xmlapp, 'sourceCode', './source')
+            self.xmltext(app_val, xmlapp, 'webSite', './web')
+            self.xmltext(app_val, xmlapp, 'added',
                          './added:int(mktime(strptime(value, "%Y-%m-%d")))')
-            self.xmltext(appVal, xmlapp, 'icon', './icon')
-            self.xmltext(appVal, xmlapp, 'packageName', './id')
-            self.xmltext(appVal, xmlapp, 'lastUpdated',
+            self.xmltext(app_val, xmlapp, 'icon', './icon')
+            self.xmltext(app_val, xmlapp, 'packageName', './id')
+            self.xmltext(app_val, xmlapp, 'lastUpdated',
                          './lastupdated:int(mktime(strptime(value, "%Y-%m-%d")))')
-            loc = appVal['localized'] = {}
+            loc = app_val['localized'] = {}
             dloc = loc[self.default_locale] = {}
             self.xmltext(dloc, xmlapp, 'description', './desc')
             self.xmltext(dloc, xmlapp, 'summary', './summary')
 
-            appId = self.xmltextval(xmlapp, './id')
-            if not appId is None:
-                pkg = pkgs[appId] = []
+            app_id = self.xmltextval(xmlapp, './id')
+            if not app_id is None:
+                pkg = pkgs[app_id] = []
                 packages = xmlapp.findall('./package')
                 for xmlpkg in packages:
-                    pkgVal = {}
+                    pkg_val = {}
                     self.xmltext(
-                        pkgVal, xmlpkg, 'added', './added:int(mktime(strptime(value, "%Y-%m-%d")))')
-                    self.xmltext(pkgVal, xmlpkg, 'apkName', './apkname')
-                    self.xmltext(pkgVal, xmlpkg, 'hash', './hash')
-                    self.xmlattr(pkgVal, xmlpkg, 'hashType', './hash[@type]')
-                    self.xmltext(pkgVal, xmlpkg, 'minSdkVersion', './sdkver')
-                    self.xmltext(pkgVal, xmlpkg, 'targetSdkVersion',
+                        pkg_val, xmlpkg, 'added', './added:int(mktime(strptime(value, "%Y-%m-%d")))')
+                    self.xmltext(pkg_val, xmlpkg, 'apkName', './apkname')
+                    self.xmltext(pkg_val, xmlpkg, 'hash', './hash')
+                    self.xmlattr(pkg_val, xmlpkg, 'hashType', './hash[@type]')
+                    self.xmltext(pkg_val, xmlpkg, 'minSdkVersion', './sdkver')
+                    self.xmltext(pkg_val, xmlpkg, 'targetSdkVersion',
                                  './targetSdkVersion')
-                    pkgVal['packageName'] = appId
-                    self.xmltext(pkgVal, xmlpkg, 'sig', './sig')
-                    self.xmltext(pkgVal, xmlpkg, 'versionName', './version')
-                    self.xmltext(pkgVal, xmlpkg, 'versionCode',
+                    pkg_val['packageName'] = app_id
+                    self.xmltext(pkg_val, xmlpkg, 'sig', './sig')
+                    self.xmltext(pkg_val, xmlpkg, 'versionName', './version')
+                    self.xmltext(pkg_val, xmlpkg, 'versionCode',
                                  './versioncode')
-                    self.xmltext(pkgVal, xmlpkg, 'size', './size')
+                    self.xmltext(pkg_val, xmlpkg, 'size', './size')
                     perm = xmlpkg.find('permissions')
                     if not perm is None:
-                        up = pkgVal['uses-permission'] = []
-                        npstr = perm.text.split(",")
-                        for ps in npstr:
-                            up.append(['android.permission.'+ps.strip(), None])
-                    if len(pkgVal) > 0:
-                        pkg.append(pkgVal)
-            if len(appVal) > 1:
-                apps.append(appVal)
+                        user_permission = pkg_val['uses-permission'] = []
+                        user_permission_split = perm.text.split(",")
+                        for user_permission_str in user_permission_split:
+                            user_permission.append(['android.permission.'+user_permission_str.strip(), None])
+                    if len(pkg_val) > 0:
+                        pkg.append(pkg_val)
+            if len(app_val) > 1:
+                apps.append(app_val)
 
     def monkeypatch(self):
         ''' fixup metadata paths -> url '''

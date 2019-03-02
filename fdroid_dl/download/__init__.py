@@ -9,4 +9,4 @@ from .verifieddownload import FuturesSessionVerifiedDownload
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-__all__ = ['FuturesSessionFlex','FuturesSessionVerifiedDownload']
+__all__ = ['FuturesSessionFlex', 'FuturesSessionVerifiedDownload']

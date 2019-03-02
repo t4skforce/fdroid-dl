@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import collections
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
 import logging
 import json
 import hashlib
@@ -11,10 +14,9 @@ from ..json import GenericJSONEncoder
 from .index import Index
 from .appmetadata import AppMetadata
 
-
-logger = logging.getLogger('model.Metadata')
-class Metadata(collections.MutableMapping):
-    def __init__(self,repoman, config={},default_locale='en-US'):
+LOGGER = logging.getLogger('model.Metadata')
+class Metadata(MutableMapping):
+    def __init__(self, repoman, config={}, default_locale='en-US'):
         self.__repoman = repoman
         self.__config = config
         self.__store = {}
@@ -24,56 +26,57 @@ class Metadata(collections.MutableMapping):
     def __load(self):
         # load from config file
         for key in self.__config.keys():
-            self.__config[key]=AppMetadata(key,self.__config[key],default_locale=self.__default_locale)
-            self.__store[key]=AppMetadata(key,self.__config[key],default_locale=self.__default_locale)
+            self.__config[key] = AppMetadata(key, self.__config[key], default_locale=self.__default_locale)
+            self.__store[key] = AppMetadata(key, self.__config[key], default_locale=self.__default_locale)
         # load from index files
 
-    def load(self,index):
-        if not isinstance(index,Index) and not isinstance(index,dict) and not isinstance(index,str):
+    def load(self, index):
+        if not isinstance(index, Index) and not isinstance(index, dict) and not isinstance(index, str):
             raise NotImplementedError("I can only load instances of Index at the moment")
-        if isinstance(index,str):
+        if isinstance(index, str):
             index = self.__repoman.index(index)
-        apps = index.get('apps',[])
+        apps = index.get('apps', [])
         for app in apps:
             self.add(app)
 
-    def loadAll(self):
+    def load_all(self):
         for index in self.__repoman.indices:
-            logger.info("loading index: %s"%index.key)
-            apps = index.get('apps',[])
+            LOGGER.info("loading index: %s", index.key)
+            apps = index.get('apps', [])
             for app in apps:
-                appid = app.get('packageName',None)
+                appid = app.get('packageName', None)
                 if not appid is None:
-                    self.add(AppMetadata(appid,app,default_locale=self.__default_locale))
-            logger.info("loaded index: %s apps: %s"%(index.key,len(apps)))
+                    self.add(AppMetadata(appid, app, default_locale=self.__default_locale))
+            LOGGER.info("loaded index: %s apps: %s", index.key, len(apps))
         return self
 
-    def add(self,appmetadata):
-        if appmetadata is None: return
+    def add(self, appmetadata):
+        if appmetadata is None:
+            return
         if appmetadata.id is None:
             KeyError('cant add metadata without id! %s'%appmetadata)
         if appmetadata.id in self.__store:
             self.__store[appmetadata.id].merge(appmetadata)
         else:
-            self.__store[appmetadata.id]=appmetadata
+            self.__store[appmetadata.id] = appmetadata
         return self
 
-    def findAll(self,key,default=None):
+    def find_all(self, key):
         if key is None:
             raise KeyError("key must not be empty")
-        retVal = set()
+        ret_val = set()
         if key.startswith('regex:'):
-            c = re.compile(key[6:],re.I|re.S)
+            regc = re.compile(key[6:], re.I|re.S)
             for k in self.__store:
-                m = c.match(k)
-                if not m is None:
-                    retVal.add(self.__store[k])
-        elif key in ['*','.*','all']:
+                match = regc.match(k)
+                if not match is None:
+                    ret_val.add(self.__store[k])
+        elif key in ['*', '.*', 'all']:
             for k in self.__store:
-                retVal.add(self.__store[k])
+                ret_val.add(self.__store[k])
         elif key in self:
-            retVal.add(self[key])
-        return list(retVal)
+            ret_val.add(self[key])
+        return list(ret_val)
 
     def __repr__(self):
         return "<Metadata: %s>"%str(json.dumps(self.__store, indent=4, cls=GenericJSONEncoder))
