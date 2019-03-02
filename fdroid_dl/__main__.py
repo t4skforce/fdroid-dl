@@ -46,11 +46,15 @@ def main(ctx, debug, config, repo, metadata, cache):
 @click.option('--apk/--no-apk', default=True, show_default=True, help='download apk files')
 @click.option('--apk-versions', default=1, type=int, show_default=True, help='how many versions of apk to download')
 @click.option('--src/--no-src', default=True, show_default=True, help='download src files')
+@click.option('--threads', default=10, type=int, show_default=True, help='configure number of parallel threads used for download')
+@click.option('--head-timeout', default=10, type=int, show_default=True, help='maximum time in seconds a HEAD request is allowed to take')
+@click.option('--index-timeout', default=60, type=int, show_default=True, help='maximum time in seconds index file download is allowed to take')
+@click.option('--download-timeout', default=60, type=int, show_default=True, help='maximum time in seconds file download is allowed to take')
 @click.pass_context
-def update(ctx, index, metadata, apk, apk_versions, src):
+def update(ctx, index, metadata, apk, apk_versions, src, threads, head_timeout, index_timeout, download_timeout):
     if apk_versions <= 0: apk_versions=1
     with Config(ctx.obj['config'], cache_dir=ctx.obj['cache_dir'],apk_versions=apk_versions) as cfg:
-        u = Update(cfg)
+        u = Update(cfg, max_workers=threads, head_timeout=head_timeout, index_timeout=index_timeout, download_timeout=download_timeout)
         if index:       u.index()
         if metadata:    u.metadata()
         if apk:         u.apk()
