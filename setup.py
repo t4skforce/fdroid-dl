@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="fdroid-dl",
-    version="0.0.4",
+    version="0.0.5",
     author="t4skforce",
     author_email="7422037+t4skforce@users.noreply.github.com",
     description="fdroid-dl is a f-droid (offline) mirror generation and update utility",
