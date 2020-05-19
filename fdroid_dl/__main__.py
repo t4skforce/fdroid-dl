@@ -4,11 +4,10 @@ import logging
 import click
 from .model import Config
 from .update import Update
-from . import NAME
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-LOGGER = logging.getLogger(NAME)
+LOGGER = logging.getLogger("fdroid-dl")
 
 @click.group(invoke_without_command=True)
 @click.option('-d', '--debug', is_flag=True, default=False, help='enable debug level logging')
