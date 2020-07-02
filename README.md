@@ -4,7 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/fdroid-dl/badge/?version=latest)](https://fdroid-dl.readthedocs.io/en/latest/?badge=latest)
 
 
-Is a python based f-droid mirror generation and update utility. Point at one or more existing f-droid repositories and the utility will download the metadata (pictures, descriptions,..) for you and place it in your local system. Simply run ```fdroid-dl && fdroid update``` and you are set.
+Is a python based f-droid mirror generation and update utility. Point at one or more existing f-droid repositories and the utility will download the metadata (pictures, descriptions,..) for you and place it in your local system. Simply run ```fdroid-dl && fdroid-dl update``` and you are set.
 
 ## Motivation
 The idea is to have an no internet local copy of one or more repositories, without the need to compile the thousands of apps on your own build server but rather download them like the android client does. So this tool came into existence to simply download a whole repository and import the apps into your own locally installed one. At the time of writing a full offline copy including assets is ~7.5GB of the official repository of f-droid.org.
